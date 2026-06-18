@@ -1,17 +1,3 @@
----
-configs:
-- config_name: african_languages
-  data_files: "*_v*.csv"
-- config_name: english
-  data_files: "english_cache.csv"
-- config_name: reference_caches
-  data_files: "reference_caches/*.csv"
-license: other
-pretty_name: Africa Corpus
-task_categories:
-- translation
----
-
 # Africa Corpus Builder
 
 A toolkit and small Python library for **retrieving parallel and monolingual
