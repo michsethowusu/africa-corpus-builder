@@ -11,8 +11,8 @@ Pivots (one good full OT+NT Bible per language):
     zh  CUNPSS Chinese Union Version          (id 48)
     pt  ARA    Almeida Revista e Atualizada   (id 1608)
 
-    python build_pivot_caches.py            # fetch all pivots
-    python build_pivot_caches.py en fr      # fetch only some
+    python scripts/build_pivot_caches.py            # fetch all pivots
+    python scripts/build_pivot_caches.py en fr      # fetch only some
 
 Output:
     pivots/{lang}.csv          columns: verse_key, text
@@ -26,6 +26,7 @@ import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from youversion_common import (
     ALL_BOOK_CODES, BOOK_CHAPTERS, NUM_WORKERS,
     get_chapter_verses, clean_text, build_session_pool,
@@ -40,7 +41,8 @@ PIVOTS = {
     "pt": (1608, "ARA"),
 }
 
-PIVOT_DIR     = "./pivots"
+REPO_ROOT     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PIVOT_DIR     = os.path.join(REPO_ROOT, "pivots")
 PROGRESS_FILE = os.path.join(PIVOT_DIR, "progress.json")
 
 PROG_LOCK = threading.Lock()

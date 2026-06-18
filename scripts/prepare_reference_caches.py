@@ -13,14 +13,15 @@ that `africa_corpus.py` expects:
 
 Run this once before push_to_hf.py.
 
-    python prepare_reference_caches.py
+    python scripts/prepare_reference_caches.py
 """
 
 import csv
 import os
 
-PIVOT_DIR = "./pivots"
-OUT_ROOT  = "./african_bible_parallel_text_datasets"
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PIVOT_DIR = os.path.join(REPO_ROOT, "pivots")
+OUT_ROOT  = os.path.join(REPO_ROOT, "african_bible_parallel_text_datasets")
 REF_DIR   = os.path.join(OUT_ROOT, "reference_caches")
 
 csv.field_size_limit(10_000_000)

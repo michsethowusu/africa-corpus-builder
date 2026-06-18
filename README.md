@@ -1,3 +1,17 @@
+---
+configs:
+- config_name: african_languages
+  data_files: "*_v*.csv"
+- config_name: english
+  data_files: "english_cache.csv"
+- config_name: reference_caches
+  data_files: "reference_caches/*.csv"
+license: other
+pretty_name: Africa Corpus
+task_categories:
+- translation
+---
+
 # Africa Corpus Builder
 
 A toolkit and small Python library for **retrieving parallel and monolingual
@@ -148,13 +162,13 @@ best), then:
 
 ```bash
 # 1. fetch and cache it locally
-python build_pivot_caches.py   # edit PIVOTS dict to add your language first
+python scripts/build_pivot_caches.py   # edit PIVOTS dict to add your language first
 
 # 2. convert to corpus format
-python prepare_reference_caches.py
+python scripts/prepare_reference_caches.py
 
 # 3. push to HuggingFace
-python push_to_hf.py
+python scripts/push_to_hf.py
 ```
 
 It's immediately selectable in `africa_corpus.py` once on HuggingFace — nothing
@@ -185,11 +199,11 @@ coverage:
   Resume-safe: interrupted runs pick up exactly where they left off.
 - `youversion_common.py` — shared API helpers (chapter fetcher, text cleaner,
   session pool).
-- `build_pivot_caches.py` — fetches the five pivot/reference Bibles (en/fr/ar/zh/pt)
+- `scripts/build_pivot_caches.py` — fetches the five pivot/reference Bibles (en/fr/ar/zh/pt)
   into `pivots/`.
-- `prepare_reference_caches.py` — converts `pivots/` into the corpus format
+- `scripts/prepare_reference_caches.py` — converts `pivots/` into the corpus format
   expected by `africa_corpus.py`.
-- `push_to_hf.py` — incremental sync of `african_bible_parallel_text_datasets/`
+- `scripts/push_to_hf.py` — incremental sync of `african_bible_parallel_text_datasets/`
   to `michsethowusu/africa-corpus`; only uploads files not already on HF.
 
 Typical workflow for extending coverage:
@@ -199,8 +213,8 @@ Typical workflow for extending coverage:
 python youversion_parallel_text_builder.py youversion_africa_versions.csv
 
 # then push new files to HuggingFace
-python push_to_hf.py --dry-run   # preview what's new
-python push_to_hf.py             # sync to HF
+python scripts/push_to_hf.py --dry-run   # preview what's new
+python scripts/push_to_hf.py             # sync to HF
 ```
 
 ---

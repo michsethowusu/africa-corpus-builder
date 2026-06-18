@@ -18,12 +18,12 @@ Strategy to avoid HF rate limits (128 commits/hour):
   Phase 2 — upload each repo in ONE bulk commit via upload_large_folder
 
 Usage:
-    python build_and_push_hf.py --build-only      # phase 1: build parquets locally
-    python build_and_push_hf.py --push-only        # phase 2: upload (needs HF login)
-    python build_and_push_hf.py                    # both phases
-    python build_and_push_hf.py --namespace michsethowusu
-    python build_and_push_hf.py --langs twi ewe    # only these languages
-    python build_and_push_hf.py --private
+    python scripts/build_and_push_hf.py --build-only      # phase 1: build parquets locally
+    python scripts/build_and_push_hf.py --push-only        # phase 2: upload (needs HF login)
+    python scripts/build_and_push_hf.py                    # both phases
+    python scripts/build_and_push_hf.py --namespace michsethowusu
+    python scripts/build_and_push_hf.py --langs twi ewe    # only these languages
+    python scripts/build_and_push_hf.py --private
 
 Auth: set env HF_TOKEN, or run `huggingface-cli login` first.
 """
@@ -53,12 +53,13 @@ import os
 
 import pandas as pd
 
-LOCAL_ROOT    = "./african_bible_parallel_text_datasets"
-PIVOT_DIR     = "./pivots"
-VERSIONS_CSV  = "youversion_africa_versions.csv"
-BUILD_DIR     = "./hf_build"
-BUILD_PROGRESS = "./build_progress.json"
-PIVOT_LANGS   = ["en", "fr", "ar", "zh", "pt"]
+REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOCAL_ROOT     = os.path.join(REPO_ROOT, "african_bible_parallel_text_datasets")
+PIVOT_DIR      = os.path.join(REPO_ROOT, "pivots")
+VERSIONS_CSV   = os.path.join(REPO_ROOT, "youversion_africa_versions.csv")
+BUILD_DIR      = os.path.join(REPO_ROOT, "hf_build")
+BUILD_PROGRESS = os.path.join(REPO_ROOT, "build_progress.json")
+PIVOT_LANGS    = ["en", "fr", "ar", "zh", "pt"]
 
 csv.field_size_limit(10**7)
 
@@ -196,7 +197,7 @@ configs:
 
 **Configs (subsets):** {len(configs)} languages/variants.
 
-Built with [africa-mt-builder](https://github.com/AfriSpeech/africa-mt-builder).
+Built with [africa-corpus-builder](https://github.com/michsethowusu/africa-corpus-builder).
 """
     with open(os.path.join(dataset_dir, "README.md"), "w", encoding="utf-8") as f:
         f.write(card)

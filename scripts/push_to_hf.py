@@ -26,10 +26,10 @@ Uses your cached HuggingFace login, or set HF_TOKEN in the environment:
 
 Usage
 -----
-    python push_to_hf.py                       # append new files only
-    python push_to_hf.py --dry-run             # show what would upload
-    python push_to_hf.py --sync                # re-upload all (HF skips unchanged)
-    python push_to_hf.py --repo michsethowusu/africa-corpus
+    python scripts/push_to_hf.py                       # append new files only
+    python scripts/push_to_hf.py --dry-run             # show what would upload
+    python scripts/push_to_hf.py --sync                # re-upload all (HF skips unchanged)
+    python scripts/push_to_hf.py --repo michsethowusu/africa-corpus
 """
 
 import os
@@ -38,7 +38,7 @@ import sys
 from huggingface_hub import HfApi
 from huggingface_hub.utils import RepositoryNotFoundError
 
-REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_ROOT = os.path.join(REPO_ROOT, "african_bible_parallel_text_datasets")
 
 HF_REPO_ID   = os.environ.get("AFRICA_CORPUS_REPO", "michsethowusu/africa-corpus")
@@ -85,10 +85,10 @@ def main():
     if not local:
         sys.exit(
             f"No data files found under {DATA_ROOT}\n"
-            f"Run prepare_reference_caches.py first, then re-run this script."
+            f"Run scripts/prepare_reference_caches.py first, then re-run this script."
         )
 
-    remote  = remote_files(api, repo_id)
+    remote   = remote_files(api, repo_id)
     new      = [r for r in local if r not in remote]
     existing = [r for r in local if r in remote]
 
@@ -111,13 +111,12 @@ def main():
     api.create_repo(repo_id=repo_id, repo_type=HF_REPO_TYPE,
                     exist_ok=True, private=False)
 
-    print(f"Uploading {len(to_upload)} file(s) via upload_large_folder ...")
-    # ignore_patterns excludes run-state files that should never be on HF
-    api.upload_large_folder(
+    print(f"Uploading {len(to_upload)} file(s) ...")
+    api.upload_folder(
         repo_id=repo_id,
         repo_type=HF_REPO_TYPE,
         folder_path=DATA_ROOT,
-        ignore_patterns=["progress.json", "progress.json.tmp", "testament_status.json"],
+        allow_patterns=to_upload,
     )
     print(f"\nDone: https://huggingface.co/datasets/{repo_id}")
 
