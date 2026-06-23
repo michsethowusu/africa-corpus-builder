@@ -25,6 +25,7 @@ MAX_RETRIES     = 3
 RETRY_WAIT      = 5
 
 CHAPTER_API = "https://nodejs.bible.com/api/bible/chapter/3.1"
+VERSION_API = "https://nodejs.bible.com/api/bible/version/3.1"
 
 REQUEST_HEADERS = {
     "User-Agent": (
@@ -143,6 +144,48 @@ def get_chapter_verses(session: requests.Session, version_num: int, book: str,
                 time.sleep(RETRY_WAIT)
             else:
                 return None
+    return None
+
+
+# ─────────────────────────────────────────────
+# VERSION INVENTORY  (exact book/chapter list)
+# ─────────────────────────────────────────────
+#
+# bible.com exposes per-version metadata listing exactly which books and
+# chapters the version contains. Scraping from this is precise: no testament
+# probe to misjudge, no static chapter table to drift, and no requests wasted
+# on books/chapters a version doesn't have.
+
+_CANON_BOOKS = set(ALL_BOOK_CODES)   # the 66-book canon we build datasets for
+
+
+def get_version_chapters(session: requests.Session, version_num: int):
+    """Return the ordered [(book, chapter), ...] this version actually contains
+    (canonical chapters within the 66-book canon), or None if metadata is
+    unavailable so the caller can fall back to probing."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            time.sleep(REQUEST_DELAY)
+            resp = session.get(VERSION_API, params={"id": version_num},
+                               headers=REQUEST_HEADERS, timeout=REQUEST_TIMEOUT)
+            resp.raise_for_status()
+            books = resp.json().get("books")
+            if not books:
+                return None
+            out = []
+            for b in books:
+                if b.get("usfm") not in _CANON_BOOKS:
+                    continue
+                for c in b.get("chapters", []):
+                    if not c.get("canonical"):
+                        continue
+                    m = re.match(r"^([A-Z0-9]+)\.(\d+)$", c.get("usfm", ""))
+                    if m:
+                        out.append((m.group(1), int(m.group(2))))
+            return out or None
+        except Exception:
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_WAIT)
     return None
 
 

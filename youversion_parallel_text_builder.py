@@ -79,7 +79,8 @@ from bs4 import BeautifulSoup
 # Shared scraping helpers live in youversion_common.py
 from youversion_common import (
     REQUEST_HEADERS, ALL_BOOK_CODES, BOOK_CHAPTERS,
-    NUM_WORKERS, get_chapter_verses, clean_text, build_session_pool,
+    NUM_WORKERS, get_chapter_verses, get_version_chapters,
+    clean_text, build_session_pool,
 )
 
 
@@ -224,14 +225,60 @@ def process_chapter(book, chapter, version_num, csv_path,
 # PROBE TESTAMENT
 # ─────────────────────────────────────────────
 
+# Representative books probed per testament (fallback path only). Several are
+# tried — not just one — so a testament isn't skipped when only an unusual book
+# is present, e.g. an "NT + Psalms" edition whose only OT book is Psalms.
+OT_PROBE_BOOKS = ["GEN", "PSA", "ISA", "EXO", "PRO"]
+NT_PROBE_BOOKS = ["MAT", "JHN", "ACT", "REV"]
+
+
 def probe_testament(label: str, probe_books: list, version_num: int,
                     session: requests.Session) -> bool:
-    book = probe_books[0]
-    print(f"  [{label} probe] fetching {book}.1 ...")
-    verses = get_chapter_verses(session, version_num, book, 1)
-    found  = bool(verses)
-    print(f"  [{label} probe] {'content found' if found else 'no content — skipping testament'}")
-    return found
+    """Return True if the version has content in chapter 1 of ANY probe book."""
+    for book in probe_books:
+        print(f"  [{label} probe] fetching {book}.1 ...")
+        if get_chapter_verses(session, version_num, book, 1):
+            print(f"  [{label} probe] content found in {book}")
+            return True
+    print(f"  [{label} probe] no content in any probe book — skipping testament")
+    return False
+
+
+def _fallback_chapter_list(version_num, session_queue, testament_status):
+    """Probe-based (book, chapter) list, used only when metadata is unavailable.
+
+    Returns None if neither testament has content.
+    """
+    OT_BOOKS = ALL_BOOK_CODES[:39]
+    cached = testament_status.get(version_num)
+    probe_session = session_queue.get()
+    try:
+        if cached and "ot" in cached:
+            ot_ok = cached["ot"]
+        else:
+            ot_ok = probe_testament("OT", OT_PROBE_BOOKS, version_num, probe_session)
+            testament_status.setdefault(version_num, {})["ot"] = ot_ok
+            save_testament_status(testament_status)
+        if cached and "nt" in cached:
+            nt_ok = cached["nt"]
+        else:
+            nt_ok = probe_testament("NT", NT_PROBE_BOOKS, version_num, probe_session)
+            testament_status.setdefault(version_num, {})["nt"] = nt_ok
+            save_testament_status(testament_status)
+    finally:
+        session_queue.put(probe_session)
+
+    if not ot_ok and not nt_ok:
+        return None
+
+    chapters = []
+    for book in ALL_BOOK_CODES:
+        in_ot = book in OT_BOOKS
+        if (in_ot and not ot_ok) or (not in_ot and not nt_ok):
+            continue
+        for chapter in range(1, BOOK_CHAPTERS.get(book, 0) + 1):
+            chapters.append((book, chapter))
+    return chapters
 
 
 # ─────────────────────────────────────────────
@@ -248,50 +295,34 @@ def build_dataset_for_bible(version_num, lang_code, lang_name,
     done_set = set(progress_dict.get(version_num, []))
     stats    = {"verses": 0}
 
-    OT_BOOKS = ALL_BOOK_CODES[:39]
-    NT_BOOKS = ALL_BOOK_CODES[39:]
-    cached   = testament_status.get(version_num)
-
-    probe_session = session_queue.get()
+    # Ask the version metadata for the exact book/chapter inventory and scrape
+    # precisely those chapters. Falls back to probing only if metadata fails.
+    meta_session = session_queue.get()
     try:
-        if cached and "ot" in cached:
-            ot_ok = cached["ot"]
-            print(f"\n  OT probe cached ({'ok' if ot_ok else 'skip'}).")
-        else:
-            print(f"\n  Probing OT ...")
-            ot_ok = probe_testament("OT", OT_BOOKS, version_num, probe_session)
-            testament_status.setdefault(version_num, {})["ot"] = ot_ok
-            save_testament_status(testament_status)
-
-        if cached and "nt" in cached:
-            nt_ok = cached["nt"]
-            print(f"  NT probe cached ({'ok' if nt_ok else 'skip'}).")
-        else:
-            print(f"  Probing NT ...")
-            nt_ok = probe_testament("NT", NT_BOOKS, version_num, probe_session)
-            testament_status.setdefault(version_num, {})["nt"] = nt_ok
-            save_testament_status(testament_status)
+        inventory = get_version_chapters(meta_session, version_num)
     finally:
-        session_queue.put(probe_session)
+        session_queue.put(meta_session)
+
+    if inventory is not None:
+        print(f"\n  Metadata: version contains {len(inventory)} canonical chapter(s)")
+        candidate_chapters = inventory
+    else:
+        print("\n  Metadata unavailable — falling back to probe + static table")
+        candidate_chapters = _fallback_chapter_list(
+            version_num, session_queue, testament_status)
+        if candidate_chapters is None:
+            print(f"  No content found — skipping {lang_name} ({lang_code}).")
+            return stats
 
     flush_progress(progress_dict)
-    print(f"  OT: {'process' if ot_ok else 'skip'} | NT: {'process' if nt_ok else 'skip'}")
-
-    if not ot_ok and not nt_ok:
-        print(f"  No content found — skipping {lang_name} ({lang_code}).")
-        return stats
 
     tasks            = []
     skipped_chapters = 0
-    for book in ALL_BOOK_CODES:
-        in_ot = book in OT_BOOKS
-        if (in_ot and not ot_ok) or (not in_ot and not nt_ok):
-            continue
-        for chapter in range(1, BOOK_CHAPTERS.get(book, 0) + 1):
-            if is_chapter_done(book, chapter, done_set):
-                skipped_chapters += 1
-            else:
-                tasks.append((book, chapter))
+    for book, chapter in candidate_chapters:
+        if is_chapter_done(book, chapter, done_set):
+            skipped_chapters += 1
+        else:
+            tasks.append((book, chapter))
 
     if skipped_chapters:
         print(f"  Skipped {skipped_chapters} already-completed chapters")
