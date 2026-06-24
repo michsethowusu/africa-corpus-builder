@@ -30,7 +30,7 @@ makes African ↔ African and African ↔ other-language pairs possible.
 
 ## Dataset statistics
 
-**693 African languages**, **15,974,671 sentences** in total. Sentences = harvested verses available for alignment, summed across all Bible versions of each language.
+**693 African languages**, **15,974,671 sentences** in total. Sentences = harvested verses available for alignment.
 
 | Language | Code | Sentences |
 |---|---|--:|
