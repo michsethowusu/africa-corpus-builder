@@ -181,8 +181,16 @@ def _discover_reference() -> dict:
     rels  = [r for r in files if r.startswith("reference_caches/")]
     langs = _group_by_filename(rels, "reference", "text")
     if "english_cache.csv" in files:
-        langs["en"] = Language("en", "English", "reference",
-                               files=["english_cache.csv"], text_column="eng")
+        # english_cache.csv is the default English (CEB). Merge it with any
+        # versioned reference_caches/English_en_v*.csv files rather than
+        # replacing them, so all English versions are available under "en".
+        en = langs.get("en")
+        if en is None:
+            langs["en"] = Language("en", "English", "reference",
+                                   files=["english_cache.csv"], text_column="eng")
+        else:
+            en.files.insert(0, "english_cache.csv")
+            en.text_column = "eng"
     return langs
 
 
@@ -209,6 +217,20 @@ def resolve(token: str) -> Language:
     """Look a language up by exact code or exact (case-insensitive) name."""
     reg   = registry()
     token = token.strip()
+
+    # "code@version" selects a single Bible version (e.g. "en@406", "fr@21").
+    # Without @, all versions of a language are merged (more paraphrases).
+    if "@" in token:
+        base_tok, ver = token.rsplit("@", 1)
+        base = resolve(base_tok)
+        ver = ver.strip()
+        sel = [f for f in base.files if f"_v{ver}." in f.split("/")[-1]]
+        if not sel:
+            avail = [f.split("/")[-1] for f in base.files]
+            raise KeyError(f"No version '{ver}' for '{base.code}'. Available files: {avail}")
+        return Language(base.code, f"{base.name} (v{ver})", base.kind,
+                        files=sel, text_column=base.text_column)
+
     if token in reg:
         return reg[token]
     low = token.lower()
