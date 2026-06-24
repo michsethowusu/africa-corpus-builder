@@ -21,7 +21,7 @@ Usage:
     python scripts/build_and_push_hf.py --build-only      # phase 1: build parquets locally
     python scripts/build_and_push_hf.py --push-only        # phase 2: upload (needs HF login)
     python scripts/build_and_push_hf.py                    # both phases
-    python scripts/build_and_push_hf.py --namespace michsethowusu
+    python scripts/build_and_push_hf.py --namespace AfriSpeech
     python scripts/build_and_push_hf.py --langs twi ewe    # only these languages
     python scripts/build_and_push_hf.py --private
 
@@ -197,7 +197,7 @@ configs:
 
 **Configs (subsets):** {len(configs)} languages/variants.
 
-Built with [africa-corpus-builder](https://github.com/michsethowusu/africa-corpus-builder).
+Built with [africa-corpus-builder](https://github.com/AfriSpeech/africa-corpus-builder).
 """
     with open(os.path.join(dataset_dir, "README.md"), "w", encoding="utf-8") as f:
         f.write(card)
@@ -310,7 +310,7 @@ def phase_push(namespace, par_name, mono_name, private, token):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--namespace", default="michsethowusu")
+    ap.add_argument("--namespace", default="AfriSpeech")
     ap.add_argument("--parallel-name",  default="african-bible-parallel")
     ap.add_argument("--mono-name",      default="african-bible-monolingual")
     ap.add_argument("--langs", nargs="*", default=None)

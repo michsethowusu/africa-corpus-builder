@@ -1,14 +1,13 @@
 # Africa Corpus Builder
 
-A toolkit and small Python library for **retrieving parallel and monolingual
-text corpora for African languages**. Pick any African language and pair it
-with English, with another African language, or with one of several other world
-languages — or pull a monolingual corpus for a single language. Output is
-clean, sentence-aligned CSV, ready for machine-translation training and NLP
-research.
+A toolkit and small Python library for **retrieving monolingual and parallel
+text corpora for African languages**. Pull a monolingual corpus for any single
+African language, or pair one with English, with another African language, or
+with one of several other world languages. Output is clean, sentence-aligned
+CSV, ready for machine-translation training and NLP research.
 
 The corpora are hosted on HuggingFace at
-[`michsethowusu/africa-corpus`](https://huggingface.co/datasets/michsethowusu/africa-corpus).
+[`AfriSpeech/africa-corpus`](https://huggingface.co/datasets/AfriSpeech/africa-corpus).
 The library downloads only the files you actually use and caches them locally,
 so the repository itself stays lightweight. New languages pushed to the dataset
 are picked up automatically — no code change or update needed.
@@ -733,7 +732,7 @@ makes African ↔ African and African ↔ other-language pairs possible.
 ## Quick start
 
 ```bash
-git clone https://github.com/michsethowusu/africa-corpus-builder.git
+git clone https://github.com/AfriSpeech/africa-corpus-builder.git
 cd africa-corpus-builder
 ```
 
@@ -889,7 +888,7 @@ million.
 
 ## Maintainer tooling (building the datasets)
 
-The raw CSVs in `michsethowusu/africa-corpus` were produced by the scripts
+The raw CSVs in `AfriSpeech/africa-corpus` were produced by the scripts
 below — **regular users do not need to run them.** For maintainers extending
 coverage:
 
@@ -903,7 +902,7 @@ coverage:
 - `scripts/prepare_reference_caches.py` — converts `pivots/` into the corpus format
   expected by `africa_corpus.py`.
 - `scripts/push_to_hf.py` — incremental sync of `african_bible_parallel_text_datasets/`
-  to `michsethowusu/africa-corpus`; only uploads files not already on HF.
+  to `AfriSpeech/africa-corpus`; only uploads files not already on HF.
 
 Typical workflow for extending coverage:
 

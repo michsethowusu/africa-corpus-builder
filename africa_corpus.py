@@ -54,7 +54,7 @@ csv.field_size_limit(10_000_000)
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_ROOT = os.path.join(REPO_ROOT, "african_bible_parallel_text_datasets")
 
-HF_REPO_ID   = os.environ.get("AFRICA_CORPUS_REPO", "michsethowusu/africa-corpus")
+HF_REPO_ID   = os.environ.get("AFRICA_CORPUS_REPO", "AfriSpeech/africa-corpus")
 HF_REPO_TYPE = "dataset"
 
 _NON_LANG_FILES = {"english_cache.csv", "progress.json",

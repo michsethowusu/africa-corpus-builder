@@ -18,7 +18,7 @@ Two modes (the dataset has ~900+ files, so the default avoids bulk downloads):
 
 Options
 -------
-  --hf REPO     dataset repo (default: $AFRICA_CORPUS_REPO or michsethowusu/africa-corpus)
+  --hf REPO     dataset repo (default: $AFRICA_CORPUS_REPO or AfriSpeech/africa-corpus)
   --only S      restrict --deep to filenames containing substring S
 
 Usage
@@ -39,7 +39,7 @@ from huggingface_hub import HfApi, hf_hub_download
 
 csv.field_size_limit(10_000_000)
 
-HF_REPO_ID = os.environ.get("AFRICA_CORPUS_REPO", "michsethowusu/africa-corpus")
+HF_REPO_ID = os.environ.get("AFRICA_CORPUS_REPO", "AfriSpeech/africa-corpus")
 VERSION_API = "https://nodejs.bible.com/api/bible/version/3.1"
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                          "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",

@@ -62,24 +62,25 @@ multilinguality:
 # Africa Corpus
 
 Verse-aligned text for **693 African languages**, plus several world languages,
-for building **parallel** and **monolingual** corpora. Every language is aligned
-on a shared verse key, so any two languages can be joined into a parallel corpus:
+for building **monolingual** and **parallel** corpora. Every language is aligned
+on a shared verse key, so any single language can be pulled on its own or any
+two joined into a parallel corpus:
 
+- Monolingual corpus for any single language
 - African ↔ English (English is the default pair)
 - African ↔ African (e.g. Twi ↔ Yoruba, Hausa ↔ Amharic)
 - African ↔ other language (French, Arabic, Chinese, Portuguese)
-- Monolingual corpus for any single language
 
 ## How to use
 
 This dataset is meant to be used through the **Africa Corpus Builder** library,
 which downloads only the files you need and joins them for you:
 
-👉 **https://github.com/michsethowusu/africa-corpus-builder**
+👉 **https://github.com/AfriSpeech/africa-corpus-builder**
 
 ```bash
 pip install huggingface_hub
-git clone https://github.com/michsethowusu/africa-corpus-builder.git
+git clone https://github.com/AfriSpeech/africa-corpus-builder.git
 cd africa-corpus-builder
 
 # Swahili ↔ English
@@ -101,7 +102,7 @@ You can also load the raw CSVs directly:
 from huggingface_hub import hf_hub_download
 import pandas as pd
 
-path = hf_hub_download("michsethowusu/africa-corpus",
+path = hf_hub_download("AfriSpeech/africa-corpus",
                        "Swahili_swc_v74.csv", repo_type="dataset")
 df = pd.read_csv(path)
 ```

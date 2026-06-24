@@ -29,7 +29,7 @@ Usage
     python scripts/push_to_hf.py                       # append new files only
     python scripts/push_to_hf.py --dry-run             # show what would upload
     python scripts/push_to_hf.py --sync                # re-upload all (HF skips unchanged)
-    python scripts/push_to_hf.py --repo michsethowusu/africa-corpus
+    python scripts/push_to_hf.py --repo AfriSpeech/africa-corpus
 """
 
 import os
@@ -41,7 +41,7 @@ from huggingface_hub.utils import RepositoryNotFoundError
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_ROOT = os.path.join(REPO_ROOT, "african_bible_parallel_text_datasets")
 
-HF_REPO_ID   = os.environ.get("AFRICA_CORPUS_REPO", "michsethowusu/africa-corpus")
+HF_REPO_ID   = os.environ.get("AFRICA_CORPUS_REPO", "AfriSpeech/africa-corpus")
 HF_REPO_TYPE = "dataset"
 
 SKIP      = {"progress.json", "progress.json.tmp", "testament_status.json"}
